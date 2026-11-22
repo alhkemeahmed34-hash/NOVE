@@ -43,6 +43,16 @@ jobs:
           cp icon.svg www/icon.svg
       - name: Generate Android project
         run: npx cap add android
+      - name: Add camera and microphone permissions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text()
+          permissions = '''    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <uses-feature android:name="android.hardware.microphone" android:required="false" />\n'''
+          s = s.replace('    <application', permissions + '    <application', 1)
+          p.write_text(s)
+          PY
       - name: Sync Android project
         run: npx cap sync android
       - name: Build APK
