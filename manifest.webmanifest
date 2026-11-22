@@ -1,0 +1,20 @@
+{
+  "name": "NOVA CHAT",
+  "short_name": "NOVA",
+  "description": "تطبيق مراسلة عربي بتصميم أسود وذهبي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090909",
+  "theme_color": "#090909",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
