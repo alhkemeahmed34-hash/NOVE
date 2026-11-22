@@ -274,16 +274,19 @@ async function searchPeople(term){
  box.innerHTML='<div class="discover-empty">جارٍ البحث...</div>';
  clearTimeout(peopleSearchTimer);
  peopleSearchTimer=setTimeout(async()=>{
-  const {data,error}=await sb.from('profiles').select('id,username,display_name,avatar_url').neq('id',currentUser.id).or('username.ilike.%'+q+'%,display_name.ilike.%'+q+'%').limit(8);
+  const [byName,byHandle]=await Promise.all([sb.from('profiles').select('id,username,display_name,avatar_url').neq('id',currentUser.id).ilike('display_name','%'+q+'%').limit(8),sb.from('profiles').select('id,username,display_name,avatar_url').neq('id',currentUser.id).ilike('username','%'+q+'%').limit(8)]);
+  const error=byName.error||byHandle.error;
   if(error){box.innerHTML='<div class="discover-empty">تعذر البحث: '+escapeHtml(error.message)+'</div>';return}
-  if(!data?.length){box.innerHTML='<div class="discover-empty">لم نعثر على حساب بهذا الاسم</div>';return}
+  const data=[...new Map([...(byName.data||[]),...(byHandle.data||[])].map(p=>[p.id,p])).values()].slice(0,8);
+  if(!data.length){box.innerHTML='<div class="discover-empty">لم نعثر على حساب بهذا الاسم</div>';return}
   const ids=data.map(p=>p.id);
   const {data:mine}=await sb.from('follows').select('following_id').eq('follower_id',currentUser.id).in('following_id',ids);
   const followed=new Set((mine||[]).map(x=>x.following_id));
-  box.innerHTML=data.map(p=>'<div class="person-result"><div class="avatar">'+escapeHtml((p.display_name||p.username||'F').slice(0,1).toUpperCase())+'</div><div class="person-meta"><b>'+escapeHtml(p.display_name||p.username)+'</b><small>@'+escapeHtml(p.username)+'</small></div><button class="follow-btn '+(followed.has(p.id)?'following':'')+'" data-uid="'+p.id+'" data-following="'+followed.has(p.id)+'" onclick="toggleFollow(this.dataset.uid,this.dataset.following===\\'true\\',this)">'+(followed.has(p.id)?'تتابعه ✓':'＋ متابعة')+'</button></div>').join('');
+  box.innerHTML=data.map(p=>'<div class="person-result"><div class="avatar">'+escapeHtml((p.display_name||p.username||'F').slice(0,1).toUpperCase())+'</div><div class="person-meta"><b>'+escapeHtml(p.display_name||p.username)+'</b><small>@'+escapeHtml(p.username)+'</small></div><button class="follow-btn '+(followed.has(p.id)?'following':'')+'" data-uid="'+p.id+'" data-following="'+followed.has(p.id)+'" onclick="toggleFollow(this.dataset.uid,this.dataset.following,this)">'+(followed.has(p.id)?'تتابعه ✓':'＋ متابعة')+'</button></div>').join('');
  },250)
 }
 async function toggleFollow(userId,isFollowing,button){
+ isFollowing=(isFollowing===true||isFollowing==='true');
  if(!currentUser||userId===currentUser.id)return;
  button.disabled=true;
  const result=isFollowing?await sb.from('follows').delete().eq('follower_id',currentUser.id).eq('following_id',userId):await sb.from('follows').insert({follower_id:currentUser.id,following_id:userId});
