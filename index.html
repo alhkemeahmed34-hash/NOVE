@@ -142,6 +142,7 @@ body{background:#f5f5fa;color:#242333}
 @media(min-width:761px){.app{padding-bottom:90px}.app-bottom-nav{height:80px}.profile-modal{padding-top:0}}
 @media(max-width:760px){.app{padding:0 0 76px}.sidebar,.chat-panel{height:calc(100dvh - 76px)}.app.chat-open .sidebar{height:calc(100dvh - 76px)}.app.chat-open .chat-panel{height:calc(100dvh - 76px)}.app-bottom-nav{height:68px;gap:clamp(0px,3vw,18px)}.nav-item{min-width:52px;font-size:9px;padding:4px 7px}.nav-item svg{width:23px;height:23px}.profile-hero{padding:24px 5px 18px}.profile-avatar{width:88px;height:88px}}
 
+.profile-edit{float:left;border:1px solid #e4defb;background:#f2efff;color:#654dce;border-radius:999px;padding:8px 15px;font-size:12px;font-weight:700}
 </style></head>
 <body>
 <div id="auth" class="auth-wrap"><div class="auth-card">
@@ -172,7 +173,7 @@ body{background:#f5f5fa;color:#242333}
 <div id="newChatModal" class="modal hidden"><div class="modal-card"><div class="modal-top"><h3>محادثة جديدة</h3><button class="close" onclick="closeNewChat()">×</button></div><p class="hint" style="text-align:right">اكتب اسم المستخدم للشخص الذي تريد مراسلته.</p><form id="newChatForm"><div class="field"><label>اسم المستخدم</label><input id="targetUsername" placeholder="مثال: ahmed123" required></div><button class="primary" id="newChatSubmit">ابدأ المحادثة</button></form><div id="newChatStatus"></div></div></div>
 
 <div id="socialModal" class="social-modal hidden"><div class="social-wrap"><div class="social-top"><div class="brand"><div class="brand-mark">F✦</div><div><div class="brand-name">FATOOM</div><div class="brand-sub">COMMUNITY</div></div></div><div class="social-nav"><button onclick="closeSocial()">الرسائل</button><button onclick="loadSocialFeed()">تحديث</button></div></div><div id="storiesBar" class="stories"></div><div class="social-form"><strong style="color:var(--gold2)">شارك لحظتك</strong><textarea id="postCaption" maxlength="2200" placeholder="ماذا يدور في بالك؟"></textarea><input id="postImage" type="file" accept="image/*"><button onclick="publishPost()">نشر المنشور</button><button class="gold-outline" style="margin-right:8px" onclick="$('storyImage').click()">＋ أضف قصة</button><input id="storyImage" type="file" accept="image/*" class="hidden" onchange="publishStory(this.files[0])"></div><div id="socialFeed"><div class="empty">جارٍ تحميل المنشورات...</div></div></div></div>
-<div id="profileModal" class="profile-modal hidden"><div class="profile-wrap"><div class="profile-top"><button class="profile-back" onclick="closeMyProfile()">‹</button><strong>الملف الشخصي</strong><button class="profile-back" onclick="signOut()" title="تسجيل الخروج">↪</button></div><div class="profile-hero"><div class="profile-avatar" id="profileAvatar">F</div><div class="profile-identity"><h2 id="profileName">حسابي</h2><p id="profileHandle">@username</p></div></div><div class="profile-stats"><div><strong id="profilePosts">0</strong><span>منشور</span></div><div><strong id="profileFollowers">0</strong><span>متابعون</span></div><div><strong id="profileFollowing">0</strong><span>يتابع</span></div></div><div class="profile-bio">مرحباً بك في مساحتك على FATOOM ✨</div><div class="profile-section-title">منشوراتي</div><div id="myPostsGrid" class="my-posts-grid"><div class="empty">لا توجد منشورات بعد</div></div></div></div>
+<div id="profileModal" class="profile-modal hidden"><div class="profile-wrap"><div class="profile-top"><button class="profile-back" onclick="closeMyProfile()">‹</button><strong>الملف الشخصي</strong><button class="profile-back" onclick="signOut()" title="تسجيل الخروج">↪</button></div><div class="profile-hero"><div class="profile-avatar" id="profileAvatar">F</div><div class="profile-identity"><h2 id="profileName">حسابي</h2><p id="profileHandle">@username</p></div></div><div class="profile-stats"><div><strong id="profilePosts">0</strong><span>منشور</span></div><div><strong id="profileFollowers">0</strong><span>متابعون</span></div><div><strong id="profileFollowing">0</strong><span>يتابع</span></div></div><div class="profile-bio">مرحباً بك في مساحتك على FATOOM ✨<button class="profile-edit" onclick="editMyProfile()">تعديل الملف الشخصي</button></div><div class="profile-section-title">منشوراتي</div><div id="myPostsGrid" class="my-posts-grid"><div class="empty">لا توجد منشورات بعد</div></div></div></div>
 <div id="callOverlay" class="call-overlay hidden"><div class="call-videos"><video id="remoteVideo" class="call-remote" autoplay playsinline></video><video id="localVideo" class="call-local" autoplay playsinline muted></video></div><div class="call-info"><div class="avatar" id="callAvatar" style="margin:auto;width:72px;height:72px;font-size:25px">N</div><h2 id="callName">مكالمة FATOOM</h2><p id="callStatus" class="feed-small">جارٍ الاتصال...</p></div><div class="call-controls"><button onclick="toggleMute()" id="muteCallBtn">🎙</button><button onclick="toggleCamera()" id="cameraCallBtn">▣</button><button class="end-call" onclick="endCall()">✕</button></div></div>
 <div id="incomingCall" class="incoming-box hidden"><div class="incoming-card"><div class="avatar" id="incomingAvatar" style="margin:auto;width:70px;height:70px;font-size:25px">N</div><h3 id="incomingName">مكالمة واردة</h3><p id="incomingType" class="feed-small">يتصل بك...</p><button class="answer-btn" onclick="answerCall()">رد</button><button class="decline-btn" onclick="declineCall()">رفض</button></div></div>
 <script>
@@ -237,7 +238,7 @@ async function endCall(){await sendSignal('hangup',{});cleanupCall()}
 function cleanupCall(){if(pc){pc.ontrack=null;pc.close();pc=null}if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}$('localVideo').srcObject=null;$('remoteVideo').srcObject=null;$('callOverlay').classList.add('hidden');$('incomingCall').classList.add('hidden');currentCall=null;pendingOffer=null;queuedIce=[]}
 function toggleMute(){if(!localStream)return;const t=localStream.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$('muteCallBtn').textContent=t.enabled?'🎙':'🔇'}}
 function toggleCamera(){if(!localStream)return;const t=localStream.getVideoTracks()[0];if(t){t.enabled=!t.enabled;$('cameraCallBtn').textContent=t.enabled?'▣':'🚫'}}
-async function openSocial(){$('socialModal').classList.remove('hidden');$('app').classList.add('social-open');await loadSocialFeed()}
+async function openSocial(){$('socialModal').classList.remove('hidden');$('app').classList.add('social-open');setNavActive('navHome');await loadSocialFeed()}
 function closeSocial(){$('socialModal').classList.add('hidden');$('app').classList.remove('social-open')}
 async function mediaUrl(bucket,path){if(!path)return null;const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,3600);return error?null:data?.signedUrl}
 async function loadSocialFeed(){if(!currentUser)return;$('socialFeed').innerHTML='<div class="empty">جارٍ تحميل المنشورات...</div>';const [stories,posts]=await Promise.all([sb.from('stories').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}),sb.from('posts').select('*').order('created_at',{ascending:false}).limit(40)]);if(stories.error||posts.error){$('socialFeed').innerHTML='<div class="empty">تعذر تحميل المجتمع: '+escapeHtml((stories.error||posts.error).message)+'</div>';return}
@@ -268,6 +269,18 @@ async function openMyProfile(){
  const items=posts.data||[];
  $('myPostsGrid').innerHTML=items.length?(await Promise.all(items.map(async p=>{const u=await mediaUrl('nova-social',p.media_path);return u?'<img src="'+u+'" alt="منشور" loading="lazy">':'<div class="post-tile-empty">'+escapeHtml(p.caption||'منشور')+'</div>'}))).join(''):'<div class="post-tile-empty">لم تنشر أي صورة بعد</div>';
 }
+
+async function editMyProfile(){
+ const display=prompt('اكتب الاسم الظاهر الجديد:',myProfile?.display_name||'');if(display===null)return;
+ const username=prompt('اكتب اسم المستخدم الجديد (بالإنجليزية):',myProfile?.username||'');if(username===null)return;
+ const clean=username.trim().replace(/^@/,'').toLowerCase();
+ if(!/^[a-z0-9_]{3,24}$/.test(clean)){alert('اسم المستخدم يجب أن يكون من 3 إلى 24 حرفاً إنجليزياً أو رقماً أو _');return}
+ const {data,error}=await sb.from('profiles').update({display_name:display.trim()||clean,username:clean,updated_at:new Date().toISOString()}).eq('id',currentUser.id).select().single();
+ if(error){alert('تعذر تحديث الملف الشخصي: '+error.message);return}
+ myProfile=data;$('myName').textContent=data.display_name;$('myHandle').textContent='@'+data.username;
+ $('profileName').textContent=data.display_name;$('profileHandle').textContent='@'+data.username;$('profileAvatar').textContent=data.display_name.slice(0,1).toUpperCase();
+}
+
 function closeMyProfile(){$('profileModal').classList.add('hidden')}
 
 </script></body></html>
