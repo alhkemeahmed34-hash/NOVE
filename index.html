@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090909"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><title>FATOOM</title>
+<meta name="theme-color" content="#f6f6fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><title>FATOOM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -167,7 +167,31 @@ body{background:#f5f5fa;color:#242333}
 .call-overlay.audio-mode .call-videos{display:none}.call-overlay.audio-mode .call-info{margin:auto auto 26px;display:flex;flex-direction:column;align-items:center;justify-content:center}.call-overlay.audio-mode .call-info .avatar{width:132px!important;height:132px!important;font-size:48px!important;margin-bottom:25px!important;box-shadow:0 0 0 12px #ffffff0d,0 0 0 24px #ffffff08,0 18px 55px #0006}.call-overlay.audio-mode .call-info h2{font-size:25px}.call-overlay.audio-mode .call-info p{margin:8px}.call-overlay.audio-mode #callTimer{color:#eee7ff;font-size:13px;letter-spacing:2px}.call-overlay.video-mode .call-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.call-overlay.video-mode .call-info{position:absolute;top:max(24px,env(safe-area-inset-top));left:0;right:0;margin:0}.call-overlay.video-mode .call-local{bottom:150px;right:16px;width:clamp(100px,28vw,160px);aspect-ratio:3/4;object-fit:cover;border-radius:20px}.call-controls button{transition:transform .15s ease}.call-controls button:active{transform:scale(.92)}
 .story-viewer{position:fixed;inset:0;z-index:80;background:#08070e;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px}.story-viewer.hidden{display:none}.story-viewer:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 10%,#7658e855,transparent 55%);pointer-events:none}.story-viewer-top{position:absolute;top:max(12px,env(safe-area-inset-top));left:14px;right:14px;z-index:2}.story-progress{height:3px;border-radius:4px;background:#ffffff55;overflow:hidden}.story-progress span{display:block;height:100%;width:0;background:white}@keyframes storyProgress{to{width:100%}}.story-viewer-user{display:flex;align-items:center;gap:10px;padding-top:13px}.story-viewer-user .avatar{width:38px;height:38px}.story-viewer-user b,.story-viewer-user small{display:block}.story-viewer-user small{font-size:10px;color:#d5d0e3}.story-viewer-user button{margin-right:auto;border:0;background:transparent;color:#fff;font-size:30px}.story-viewer-image{position:relative;z-index:1;max-width:100%;max-height:70vh;object-fit:contain;border-radius:20px;box-shadow:0 20px 70px #0008}.story-viewer-caption,.story-viewer-music{position:relative;z-index:2;text-align:center;margin-top:9px}.story-viewer-music{background:#ffffff20;border:1px solid #ffffff30;border-radius:999px;padding:7px 13px;font-size:12px}.story-viewer-actions{position:relative;z-index:2;display:flex;gap:10px;width:min(100%,560px);align-items:center;margin-top:auto;padding:12px 0 max(8px,env(safe-area-inset-bottom))}.story-viewer-actions>button{border:1px solid #ffffff55;background:#ffffff18;color:white;border-radius:999px;padding:10px 14px}.story-viewer-actions>button.liked{color:#ff729e}.story-viewer-actions form{display:flex;gap:8px;flex:1}.story-viewer-actions input{flex:1;min-width:0;background:#ffffff18;border:1px solid #ffffff55;color:#fff;border-radius:999px;padding:11px 14px;outline:0}.story-viewer-actions form button{border:0;background:#fff;color:#47358c;border-radius:999px;padding:0 14px;font-weight:700}.story-comments{position:relative;z-index:2;width:min(100%,560px);max-height:100px;overflow:auto;font-size:12px;color:#eee}.story-comments p{margin:5px 0}.profile-edit-card .edit-avatar-pick{display:block;padding:12px;border:1px dashed #cfc5ef;border-radius:12px;color:#6851cb;font-size:12px;margin:15px 0}.profile-edit-card .edit-avatar-pick input{display:block;margin-top:8px;width:100%;font:inherit}.profile-avatar img,.avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.profile-avatar,.avatar{overflow:hidden}
 @media(max-width:760px){.story-viewer{padding:10px}.story-viewer-image{max-height:66vh}.call-controls{margin-bottom:max(22px,env(safe-area-inset-bottom))}.voice-message{min-width:min(68vw,230px)}}
-<style>#profileEditModal{z-index:90}</style></head>
+<style>#profileEditModal{z-index:90}/* FATOOM social-first refinement */
+.social-modal{z-index:25;inset:0;overflow-y:auto;overscroll-behavior:contain}
+.social-wrap{width:min(100%,560px);max-width:560px;margin:0 auto;padding-bottom:100px}
+.social-top{height:62px;top:0;margin:0 -12px;padding:8px 18px;box-shadow:0 2px 14px #28204408}
+.social-top .brand{gap:9px}.social-top .brand-mark{width:36px;height:36px;border-radius:12px;font-size:17px}
+.social-top .brand-name{font-size:17px;letter-spacing:1.8px}.social-top .brand-sub{display:none}
+.social-nav{gap:7px}.social-nav button{width:38px;height:38px;padding:0;border-radius:50%;font-size:0;display:grid;place-items:center}
+.social-nav button:first-child:after{content:'✉';font-size:18px}.social-nav button:last-child:after{content:'↻';font-size:19px}
+.stories{margin:0 -12px;padding:15px 14px 13px;gap:14px;background:#fff;border-bottom:1px solid #eeedf4;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}.story{flex:0 0 68px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-ring{width:62px;height:62px;margin-bottom:5px;padding:3px}
+.feed-card{margin:12px -2px 17px;border:0;border-radius:0;box-shadow:none;border-bottom:1px solid #eae8f0;background:#fff;overflow:visible}
+.feed-head{padding:10px 13px;min-height:58px}.feed-head .avatar{width:39px;height:39px;border:2px solid #e76ba9;box-shadow:0 0 0 2px #fff}
+.feed-head b{font-size:12px;color:#282638}.feed-photo{display:block;width:100%;max-height:none;aspect-ratio:1/1;object-fit:cover;background:#f0eff5}
+.feed-caption{padding:8px 14px 4px;font-size:13px}.feed-actions{padding:6px 13px 2px;gap:15px}
+.feed-actions button{font-size:23px;color:#302d42;padding:2px}.feed-actions button:first-child{color:#e34f79}
+.feed-small{font-size:11px}.social-form{margin:13px 0 16px;padding:13px;border-radius:16px;box-shadow:0 3px 16px #28204408}
+.social-form textarea{min-height:48px;border-radius:12px;background:#f8f7fb}.social-form input[type=file]{font-size:11px}
+.discover-panel{margin:12px 0;border-radius:16px;box-shadow:none}
+.app-bottom-nav{z-index:50;height:68px;gap:clamp(0px,4vw,34px);justify-content:space-evenly}
+.nav-item{min-width:50px;gap:2px}.nav-item span{font-size:9px}.nav-item.active{color:#7658e8}
+.profile-modal{z-index:35}.story-viewer{z-index:60}
+@media(min-width:761px){.social-modal{padding-left:20px;padding-right:20px}.social-wrap{max-width:560px}.feed-card{border:1px solid #eeedf4;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px #28204407}.feed-photo{aspect-ratio:1/1;object-fit:cover}.stories{border:1px solid #eeedf4;border-radius:16px;margin:12px 0}}
+@media(max-width:760px){.social-wrap{width:100%;padding-bottom:90px}.social-top{margin:0 -12px}.feed-card{margin-left:-12px;margin-right:-12px}.feed-photo{aspect-ratio:1/1}.app-bottom-nav{padding-bottom:calc(7px + env(safe-area-inset-bottom))}}
+</style></head>
 <body>
 <div id="auth" class="auth-wrap"><div class="auth-card">
  <div class="auth-head"><div class="brand-mark">F<span style="font-size:12px">✦</span></div><div class="brand-name">FATOOM</div><div class="brand-sub">PRIVATE • REALTIME • CONNECTED</div><p>مساحتك الخاصة للتواصل بأناقة</p></div>
@@ -190,7 +214,7 @@ body{background:#f5f5fa;color:#242333}
  <button class="nav-item active" id="navHome" onclick="openSocial()" aria-label="الرئيسية"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>الرئيسية</span></button>
  <button class="nav-item" id="navMessages" onclick="goMessages()" aria-label="الرسائل"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8z"/></svg><span>الرسائل</span></button>
  <button class="nav-item nav-create" onclick="$('postImage').click();openSocial()" aria-label="إنشاء"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>نشر</span></button>
- <button class="nav-item" id="navStories" onclick="openSocial();$('storyImage').click()" aria-label="القصص"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span>القصص</span></button>
+ <button class="nav-item" id="navSearch" onclick="openSocial();$('discoverPanel').scrollIntoView({behavior:'smooth',block:'center'})" aria-label="بحث"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7.2"/><path d="m16.2 16.2 4.3 4.3"/></svg><span>بحث</span></button>
  <button class="nav-item" id="navProfile" onclick="openMyProfile()" aria-label="حسابي"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>حسابي</span></button>
 </nav>
 </div>
