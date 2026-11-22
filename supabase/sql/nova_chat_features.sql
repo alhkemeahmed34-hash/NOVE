@@ -140,3 +140,11 @@ drop policy if exists "users delete own story comments" on public.story_comments
 create policy "users delete own story comments" on public.story_comments for delete to authenticated using (auth.uid()=user_id);
 grant select,insert,delete on public.story_likes to authenticated;
 grant select,insert,delete on public.story_comments to authenticated;
+
+
+-- FATOOM media and profile enhancements (applied 2026-11-23)
+alter table public.posts add column if not exists media_type text not null default 'image' check (media_type in ('image','video'));
+alter table public.stories add column if not exists media_type text not null default 'image' check (media_type in ('image','video'));
+alter table public.profiles add column if not exists bio text not null default '';
+alter table public.messages drop constraint if exists messages_message_type_check;
+alter table public.messages add constraint messages_message_type_check check (message_type = any (array['text'::text,'image'::text,'file'::text,'audio'::text,'video'::text]));
