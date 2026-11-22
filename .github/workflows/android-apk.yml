@@ -33,6 +33,18 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Validate app JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text()
+          scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
+          if not scripts:
+              raise SystemExit('No application script found')
+          Path('/tmp/fatoom-app.js').write_text(scripts[-1])
+          PY
+          node --check /tmp/fatoom-app.js
       - name: Install dependencies
         run: npm install
       - name: Prepare web assets
