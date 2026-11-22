@@ -59,7 +59,17 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace assembleDebug
+          for attempt in 1 2 3; do
+            echo "Android build attempt ${attempt}/3"
+            if ./gradlew --no-daemon --refresh-dependencies --stacktrace assembleDebug; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Dependency resolution/build failed; retrying after 20 seconds..."
+              sleep 20
+            fi
+          done
+          exit 1
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
