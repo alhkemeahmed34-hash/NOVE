@@ -106,3 +106,37 @@ do $$ begin
   alter publication supabase_realtime add table public.call_signals;
  end if;
 end $$;
+
+-- FATOOM story likes, comments and optional music.
+alter table public.stories add column if not exists music_path text;
+alter table public.stories add column if not exists music_title text;
+create table if not exists public.story_likes (
+ story_id uuid not null references public.stories(id) on delete cascade,
+ user_id uuid not null references auth.users(id) on delete cascade,
+ created_at timestamptz not null default now(),
+ primary key(story_id,user_id)
+);
+create table if not exists public.story_comments (
+ id uuid primary key default gen_random_uuid(),
+ story_id uuid not null references public.stories(id) on delete cascade,
+ user_id uuid not null references auth.users(id) on delete cascade,
+ content text not null check (char_length(content) between 1 and 1000),
+ created_at timestamptz not null default now()
+);
+create index if not exists story_comments_story_created_idx on public.story_comments(story_id,created_at);
+alter table public.story_likes enable row level security;
+alter table public.story_comments enable row level security;
+drop policy if exists "story likes visible to authenticated" on public.story_likes;
+create policy "story likes visible to authenticated" on public.story_likes for select to authenticated using (true);
+drop policy if exists "users like stories as themselves" on public.story_likes;
+create policy "users like stories as themselves" on public.story_likes for insert to authenticated with check (auth.uid()=user_id);
+drop policy if exists "users unlike stories as themselves" on public.story_likes;
+create policy "users unlike stories as themselves" on public.story_likes for delete to authenticated using (auth.uid()=user_id);
+drop policy if exists "story comments visible to authenticated" on public.story_comments;
+create policy "story comments visible to authenticated" on public.story_comments for select to authenticated using (exists(select 1 from public.stories s where s.id=story_id and s.expires_at>now()));
+drop policy if exists "users comment on stories as themselves" on public.story_comments;
+create policy "users comment on stories as themselves" on public.story_comments for insert to authenticated with check (auth.uid()=user_id and exists(select 1 from public.stories s where s.id=story_id and s.expires_at>now()));
+drop policy if exists "users delete own story comments" on public.story_comments;
+create policy "users delete own story comments" on public.story_comments for delete to authenticated using (auth.uid()=user_id);
+grant select,insert,delete on public.story_likes to authenticated;
+grant select,insert,delete on public.story_comments to authenticated;
