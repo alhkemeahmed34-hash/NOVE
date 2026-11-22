@@ -242,8 +242,17 @@ $('newChatForm').addEventListener('submit',async e=>{e.preventDefault();const bt
 async function openConversation(id){activeConversation=conversations.find(c=>c.id===id);if(!activeConversation)return;activePeer=activeConversation.peer;$('chatPlaceholder').classList.add('hidden');$('activeChat').classList.remove('hidden');$('peerName').textContent=activePeer?.display_name||activeConversation.title||'محادثة';$('peerAvatar').textContent=(activePeer?.display_name||'N').slice(0,1).toUpperCase();$('app').classList.add('chat-open');$('backBtn').style.display=innerWidth<=760?'block':'none';await refreshMessages();if(messageChannel)sb.removeChannel(messageChannel);messageChannel=sb.channel('nova-messages-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'conversation_id=eq.'+id},payload=>{if(activeConversation?.id===id){appendMessage(payload.new);}}).subscribe()}
 function backToList(){$('app').classList.remove('chat-open')}
 async function refreshMessages(){if(!activeConversation)return;const {data,error}=await sb.from('messages').select('*').eq('conversation_id',activeConversation.id).is('deleted_at',null).order('created_at',{ascending:true}).limit(250);if(error){console.error(error);return}$('messages').innerHTML='';(data||[]).forEach(appendMessage);$('messages').scrollTop=$('messages').scrollHeight}
-async function appendMessage(m){if($('messages').querySelector('[data-id="'+m.id+'"]'))return;const div=document.createElement('div');div.className='bubble '+(m.sender_id===currentUser.id?'mine':'');div.dataset.id=m.id;const time=new Date(m.created_at).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'});let body=escapeHtml(m.content||'');if(m.attachment_url){const {data}=await sb.storage.from('nova-media').createSignedUrl(m.attachment_url,3600);if(data?.signedUrl){if(m.message_type==='image')body='<img src="'+data.signedUrl+'" alt="صورة" style="display:block;max-width:100%;max-height:340px;border-radius:12px;object-fit:contain"><a href="'+data.signedUrl+'" target="_blank" style="color:var(--gold2)">فتح الصورة</a>';else if(m.message_type==='audio')body='<audio controls preload="metadata" src="'+data.signedUrl+'" style="max-width:100%"></audio>';}}div.innerHTML=body+'<small>'+time+'</small>';$('messages').appendChild(div);$('messages').scrollTop=$('messages').scrollHeight}
-$('messageForm').addEventListener('submit',async e=>{e.preventDefault();const content=$('messageInput').value.trim();if(!content||!activeConversation)return;$('messageInput').value='';const {data,error}=await sb.from('messages').insert({conversation_id:activeConversation.id,sender_id:currentUser.id,content,message_type:'text'}).select().single();if(error){$('messageInput').value=content;alert('تعذر إرسال الرسالة: '+error.message);return}appendMessage(data);await sb.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',activeConversation.id);});
+async function appendMessage(m){
+ if($('messages').querySelector('[data-id="'+m.id+'"]'))return;
+ const div=document.createElement('div');div.className='bubble '+(m.sender_id===currentUser.id?'mine':'');div.dataset.id=m.id;
+ const time=new Date(m.created_at).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'});let body=escapeHtml(m.content||'');
+ if(m.attachment_url){const {data}=await sb.storage.from('nova-media').createSignedUrl(m.attachment_url,3600);if(data?.signedUrl){
+  if(m.message_type==='image')body='<div class="message-image-wrap"><img src="'+data.signedUrl+'" alt="صورة مرسلة" class="message-image"><a href="'+data.signedUrl+'" target="_blank" rel="noopener">عرض الصورة</a></div>';
+  else if(m.message_type==='audio')body='<div class="voice-message"><div class="voice-icon">♫</div><div class="voice-track"><b>رسالة صوتية</b><audio controls preload="metadata" src="'+data.signedUrl+'"></audio></div></div>';
+ }}
+ div.innerHTML=body+'<small>'+time+'</small>';$('messages').appendChild(div);$('messages').scrollTop=$('messages').scrollHeight
+}
+$('messageForm').addEventListener('submit'$('messageForm').addEventListener('submit',async e=>{e.preventDefault();const content=$('messageInput').value.trim();if(!content||!activeConversation)return;$('messageInput').value='';const {data,error}=await sb.from('messages').insert({conversation_id:activeConversation.id,sender_id:currentUser.id,content,message_type:'text'}).select().single();if(error){$('messageInput').value=content;alert('تعذر إرسال الرسالة: '+error.message);return}appendMessage(data);await sb.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',activeConversation.id);});
 function onResize(){if(activeConversation)$('backBtn').style.display=innerWidth<=760?'block':'none'}window.addEventListener('resize',onResize);
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.error));
 (async()=>{const {data:{session}}=await sb.auth.getSession();if(session)await boot(session.user)})();
@@ -301,13 +310,60 @@ async function toggleFollow(userId,isFollowing,button){
 }
 
 async function publishPost(){const file=$('postImage').files[0],caption=$('postCaption').value.trim();if(!file&&!caption){alert('اكتب وصفاً أو اختر صورة');return}try{let path=null;if(file){if(!file.type.startsWith('image/'))throw new Error('اختر صورة صحيحة');path=currentUser.id+'/'+crypto.randomUUID()+'.'+(file.name.split('.').pop()||'jpg');const {error}=await sb.storage.from('nova-social').upload(path,file,{contentType:file.type});if(error)throw error}const {error}=await sb.from('posts').insert({user_id:currentUser.id,caption,media_path:path});if(error)throw error;$('postCaption').value='';$('postImage').value='';await loadSocialFeed()}catch(e){alert('تعذر نشر المنشور: '+e.message)}}
-async function publishStory(file){if(!file)return;try{if(!file.type.startsWith('image/'))throw new Error('القصة يجب أن تكون صورة');const path=currentUser.id+'/'+crypto.randomUUID()+'.'+(file.name.split('.').pop()||'jpg');const {error:up}=await sb.storage.from('nova-social').upload(path,file,{contentType:file.type});if(up)throw up;const {error}=await sb.from('stories').insert({user_id:currentUser.id,media_path:path});if(error)throw error;await loadSocialFeed()}catch(e){alert('تعذر نشر القصة: '+e.message)}}
-async function toggleLike(postId,liked){const q=sb.from('post_likes');const r=liked?await q.delete().eq('post_id',postId).eq('user_id',currentUser.id):await q.insert({post_id:postId,user_id:currentUser.id});if(r.error)alert(r.error.message);else await loadSocialFeed()}
+async function publishStory(file){
+ if(!file)return;
+ try{
+  if(!file.type.startsWith('image/'))throw new Error('اختر صورة للقصة');
+  const path=currentUser.id+'/'+crypto.randomUUID()+'.'+(file.name.split('.').pop()||'jpg');
+  const {error:up}=await sb.storage.from('nova-social').upload(path,file,{contentType:file.type});if(up)throw up;
+  const music=$('storyMusic').files[0];let musicPath=null;
+  if(music){
+   if(!music.type.startsWith('audio/'))throw new Error('ملف الموسيقى غير صالح');
+   if(music.size>12*1024*1024)throw new Error('حجم الموسيقى يجب ألا يتجاوز 12 ميجابايت');
+   musicPath=currentUser.id+'/music-'+crypto.randomUUID()+'.'+(music.name.split('.').pop()||'mp3');
+   const {error:me}=await sb.storage.from('nova-social').upload(musicPath,music,{contentType:music.type});if(me)throw me;
+  }
+  const {error}=await sb.from('stories').insert({user_id:currentUser.id,media_path:path,music_path:musicPath,music_title:music?.name?.replace(/\.[^.]+$/,'')||null});
+  if(error)throw error;$('storyImage').value='';$('storyMusic').value='';await loadSocialFeed();
+ }catch(e){alert('تعذر نشر القصة: '+e.message)}
+}
+async function toggleLike(async function toggleLike(postId,liked){const q=sb.from('post_likes');const r=liked?await q.delete().eq('post_id',postId).eq('user_id',currentUser.id):await q.insert({post_id:postId,user_id:currentUser.id});if(r.error)alert(r.error.message);else await loadSocialFeed()}
 async function commentOnPost(postId){const content=prompt('اكتب تعليقك');if(!content?.trim())return;const {error}=await sb.from('post_comments').insert({post_id:postId,user_id:currentUser.id,content:content.trim()});if(error)alert(error.message);else await loadSocialFeed()}
-function viewStory(url){if(!url)return;const w=window.open('','_blank');if(w)w.document.write('<body style="margin:0;background:#000;display:grid;place-items:center;height:100vh"><img src="'+url+'" style="max-width:100%;max-height:100%"></body>')}
+let activeStory=null;
+async function viewStory(storyId){
+ const {data:s,error}=await sb.from('stories').select('*').eq('id',storyId).maybeSingle();
+ if(error||!s){alert('تعذر فتح القصة');return}activeStory=s;
+ const [owner,likes,mine,comments]=await Promise.all([
+  sb.from('profiles').select('id,username,display_name,avatar_url').eq('id',s.user_id).maybeSingle(),
+  sb.from('story_likes').select('user_id',{count:'exact',head:true}).eq('story_id',s.id),
+  sb.from('story_likes').select('story_id').eq('story_id',s.id).eq('user_id',currentUser.id).maybeSingle(),
+  sb.from('story_comments').select('user_id,content,created_at').eq('story_id',s.id).order('created_at',{ascending:true}).limit(30)
+ ]);
+ const p=owner.data||{};$('storyOwnerName').textContent=p.display_name||p.username||'قصة';$('storyOwnerAvatar').textContent=(p.display_name||'F').slice(0,1);
+ $('storyAge').textContent=new Date(s.created_at).toLocaleString('ar');$('storyViewerCaption').textContent=s.caption||'';
+ $('storyViewerImage').src=(await mediaUrl('nova-social',s.media_path))||'';
+ $('storyLikeBtn').dataset.liked=String(!!mine.data);$('storyLikeBtn').classList.toggle('liked',!!mine.data);$('storyLikeCount').textContent=likes.count||0;$('storyLikeBtn').firstChild.textContent=mine.data?'♥ ':'♡ ';
+ $('storyComments').innerHTML=(comments.data||[]).map(x=>'<p><b>'+(x.user_id===currentUser.id?'أنت':'مستخدم')+'</b> '+escapeHtml(x.content)+'</p>').join('');
+ $('storyCommentInput').value='';$('storyMusicPlayer').pause();$('storyMusicPlayer').removeAttribute('src');$('storyMusicPlayer').classList.add('hidden');$('storyMusicLabel').classList.add('hidden');
+ if(s.music_path){const musicUrl=await mediaUrl('nova-social',s.music_path);if(musicUrl){$('storyMusicPlayer').src=musicUrl;$('storyMusicPlayer').classList.remove('hidden');$('storyMusicLabel').classList.remove('hidden');$('storyMusicTitle').textContent=s.music_title||'موسيقى القصة';$('storyMusicPlayer').play().catch(()=>{});}}
+ $('storyProgress').style.animation='none';$('storyProgress').offsetWidth;$('storyProgress').style.animation='storyProgress 12s linear forwards';$('storyViewer').classList.remove('hidden');document.body.classList.add('story-open');
+}
+function closeStoryViewer(){$('storyViewer').classList.add('hidden');$('storyMusicPlayer').pause();$('storyMusicPlayer').removeAttribute('src');document.body.classList.remove('story-open');activeStory=null}
+async function toggleStoryLike(){
+ if(!activeStory)return;const liked=$('storyLikeBtn').dataset.liked==='true';
+ const result=liked?await sb.from('story_likes').delete().eq('story_id',activeStory.id).eq('user_id',currentUser.id):await sb.from('story_likes').insert({story_id:activeStory.id,user_id:currentUser.id});
+ if(result.error){alert(result.error.message);return}
+ $('storyLikeBtn').dataset.liked=String(!liked);$('storyLikeBtn').classList.toggle('liked',!liked);$('storyLikeCount').textContent=Math.max(0,Number($('storyLikeCount').textContent||0)+(liked?-1:1));$('storyLikeBtn').firstChild.textContent=liked?'♡ ':'♥ ';
+}
+async function submitStoryComment(e){
+ e.preventDefault();if(!activeStory)return;const input=$('storyCommentInput');const content=input.value.trim();if(!content)return;
+ const {error}=await sb.from('story_comments').insert({story_id:activeStory.id,user_id:currentUser.id,content});
+ if(error){alert('تعذر إرسال التعليق: '+error.message);return}input.value='';
+ const {data}=await sb.from('story_comments').select('content,user_id,created_at').eq('story_id',activeStory.id).order('created_at',{ascending:true}).limit(30);
+ $('storyComments').innerHTML=(data||[]).map(x=>'<p><b>'+(x.user_id===currentUser.id?'أنت':'مستخدم')+'</b> '+escapeHtml(x.content)+'</p>').join('');
+}
 
-
-function setNavActive(id){document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));if($(id))$(id).classList.add('active')}
+function setNavActive(function setNavActive(id){document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));if($(id))$(id).classList.add('active')}
 function goMessages(){closeSocial();closeMyProfile();setNavActive('navMessages');$('app').classList.add('chat-open');if(activeConversation) $('activeChat').classList.remove('hidden')}
 async function openMyProfile(){
  closeSocial();$('profileModal').classList.remove('hidden');setNavActive('navProfile');
@@ -324,17 +380,27 @@ async function openMyProfile(){
  $('myPostsGrid').innerHTML=items.length?(await Promise.all(items.map(async p=>{const u=await mediaUrl('nova-social',p.media_path);return u?'<img src="'+u+'" alt="منشور" loading="lazy">':'<div class="post-tile-empty">'+escapeHtml(p.caption||'منشور')+'</div>'}))).join(''):'<div class="post-tile-empty">لم تنشر أي صورة بعد</div>';
 }
 
-async function editMyProfile(){
- const display=prompt('اكتب الاسم الظاهر الجديد:',myProfile?.display_name||'');if(display===null)return;
- const username=prompt('اكتب اسم المستخدم الجديد (بالإنجليزية):',myProfile?.username||'');if(username===null)return;
- const clean=username.trim().replace(/^@/,'').toLowerCase();
- if(!/^[a-z0-9_]{3,24}$/.test(clean)){alert('اسم المستخدم يجب أن يكون من 3 إلى 24 حرفاً إنجليزياً أو رقماً أو _');return}
- const {data,error}=await sb.from('profiles').update({display_name:display.trim()||clean,username:clean,updated_at:new Date().toISOString()}).eq('id',currentUser.id).select().single();
- if(error){alert('تعذر تحديث الملف الشخصي: '+error.message);return}
- myProfile=data;$('myName').textContent=data.display_name;$('myHandle').textContent='@'+data.username;
- $('profileName').textContent=data.display_name;$('profileHandle').textContent='@'+data.username;$('profileAvatar').textContent=data.display_name.slice(0,1).toUpperCase();
+function editMyProfile(){$('editDisplayName').value=myProfile?.display_name||'';$('editUsername').value=myProfile?.username||'';$('editAvatarFile').value='';$('profileEditModal').classList.remove('hidden')}
+function closeProfileEditor(){$('profileEditModal').classList.add('hidden')}
+async function saveMyProfile(){
+ const btn=$('saveProfileBtn'),display=$('editDisplayName').value.trim(),clean=$('editUsername').value.trim().replace(/^@/,'').toLowerCase();
+ if(!display){alert('اكتب الاسم الظاهر');return}if(!/^[a-z0-9_]{3,24}$/.test(clean)){alert('اسم المستخدم يجب أن يكون من 3 إلى 24 حرفاً إنجليزياً أو رقماً أو _');return}
+ btn.disabled=true;btn.textContent='جارٍ الحفظ...';
+ try{
+  const avatar=$('editAvatarFile').files[0];let avatarPath=myProfile?.avatar_url||null;
+  if(avatar){if(!avatar.type.startsWith('image/'))throw new Error('اختر صورة صحيحة');if(avatar.size>5*1024*1024)throw new Error('حجم الصورة 5 ميجابايت كحد أقصى');
+   avatarPath=currentUser.id+'/avatar-'+crypto.randomUUID()+'.'+(avatar.name.split('.').pop()||'jpg');
+   const {error:up}=await sb.storage.from('nova-social').upload(avatarPath,avatar,{contentType:avatar.type});if(up)throw up;
+  }
+  const {data,error}=await sb.from('profiles').update({display_name:display,username:clean,avatar_url:avatarPath,updated_at:new Date().toISOString()}).eq('id',currentUser.id).select().single();if(error)throw error;
+  myProfile=data;$('myName').textContent=data.display_name;$('myHandle').textContent='@'+data.username;$('myAvatar').textContent=data.display_name.slice(0,1).toUpperCase();
+  $('profileName').textContent=data.display_name;$('profileHandle').textContent='@'+data.username;$('profileAvatar').textContent=data.display_name.slice(0,1).toUpperCase();
+  if(avatarPath){const u=await mediaUrl('nova-social',avatarPath);if(u){$('profileAvatar').innerHTML='<img src="'+u+'" alt="صورة الحساب">';$('myAvatar').innerHTML='<img src="'+u+'" alt="صورة الحساب">';}}
+  closeProfileEditor();
+ }catch(e){alert('تعذر حفظ الملف الشخصي: '+(e.message||e))}
+ finally{btn.disabled=false;btn.textContent='حفظ التغييرات'}
 }
 
-function closeMyProfile(){$('profileModal').classList.add('hidden')}
+function closeMyProfile()function closeMyProfile(){$('profileModal').classList.add('hidden')}
 
 </script></body></html>
