@@ -117,6 +117,31 @@ body{background:#f5f5fa;color:#242333}
  .call-local{bottom:135px;right:14px}
 }
 
+
+/* Instagram-like navigation and creator profile */
+.app{padding-bottom:82px}
+.app-bottom-nav{position:fixed;z-index:30;bottom:0;left:0;right:0;height:76px;padding:7px max(12px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:clamp(8px,5vw,60px);background:#ffffffed;border-top:1px solid #eceaf3;backdrop-filter:blur(20px);box-shadow:0 -8px 28px #27203c0a}
+.nav-item{min-width:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;background:transparent;color:#8c899c;font-size:10px;font-weight:600;padding:5px 10px}
+.nav-item svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-item.active{color:#7557df}
+.nav-create svg{border:1.5px solid currentColor;border-radius:8px;padding:3px;width:28px;height:28px}
+.profile-modal{position:fixed;inset:0;z-index:24;background:#f6f6fb;overflow:auto;padding:0 16px 100px;color:#282638}
+.profile-wrap{max-width:680px;margin:auto}
+.profile-top{height:62px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eceaf2;position:sticky;top:0;background:#ffffffed;backdrop-filter:blur(16px);z-index:2}
+.profile-top strong{font-size:16px}.profile-back{border:0;background:transparent;color:#6550ca;font-size:27px;min-width:38px}
+.profile-hero{display:flex;align-items:center;gap:22px;padding:30px 8px 22px}
+.profile-avatar{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#7658e8,#e66eae);color:#fff;font-size:38px;font-weight:800;box-shadow:0 0 0 5px #eee9ff}
+.profile-identity h2{margin:0 0 4px;font-size:20px}.profile-identity p{margin:0;color:#898698;font-size:13px}
+.profile-stats{display:flex;justify-content:space-around;text-align:center;border-top:1px solid #eceaf2;border-bottom:1px solid #eceaf2;padding:16px 0}
+.profile-stats div{display:flex;flex-direction:column;gap:2px}.profile-stats strong{font-size:19px;color:#292638}.profile-stats span{font-size:12px;color:#898698}
+.profile-bio{padding:17px 7px;color:#696779;font-size:13px}
+.profile-section-title{font-weight:800;padding:14px 6px;border-top:1px solid #eceaf2}
+.my-posts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}
+.my-posts-grid img{width:100%;aspect-ratio:1;object-fit:cover;background:#eee}
+.my-posts-grid .post-tile-empty{aspect-ratio:1;display:grid;place-items:center;background:#eeedf4;color:#999;font-size:11px;padding:6px;text-align:center}
+@media(min-width:761px){.app{padding-bottom:90px}.app-bottom-nav{height:80px}.profile-modal{padding-top:0}}
+@media(max-width:760px){.app{padding:0 0 76px}.sidebar,.chat-panel{height:calc(100dvh - 76px)}.app.chat-open .sidebar{height:calc(100dvh - 76px)}.app.chat-open .chat-panel{height:calc(100dvh - 76px)}.app-bottom-nav{height:68px;gap:clamp(0px,3vw,18px)}.nav-item{min-width:52px;font-size:9px;padding:4px 7px}.nav-item svg{width:23px;height:23px}.profile-hero{padding:24px 5px 18px}.profile-avatar{width:88px;height:88px}}
+
 </style></head>
 <body>
 <div id="auth" class="auth-wrap"><div class="auth-card">
@@ -136,10 +161,18 @@ body{background:#f5f5fa;color:#242333}
  <div class="search"><input id="searchChats" placeholder="ابحث في المحادثات..." oninput="renderConversations()"></div><div class="section-label">المحادثات</div><div id="conversationList" class="conversation-list"><div class="empty">لا توجد محادثات بعد.<br>ابدأ محادثة جديدة من علامة ＋</div></div></aside>
  <main class="chat-panel"><div id="chatPlaceholder" class="chat-empty"><div><div class="big-mark">F✦</div><h2>مرحباً بك في FATOOM</h2><p>ابدأ محادثة جديدة مع أصدقائك. رسائلك ستصل مباشرة إلى الطرف الآخر عند اتصاله.</p><button class="primary" style="max-width:220px" onclick="openNewChat()">＋ محادثة جديدة</button></div></div>
  <div id="activeChat" class="hidden" style="display:flex;flex-direction:column;min-height:0;height:100%"><header class="chat-head"><div class="chat-person"><button class="icon-btn" id="backBtn" onclick="backToList()" style="display:none">‹</button><div class="avatar" id="peerAvatar">N</div><div><strong id="peerName">المحادثة</strong><small>متصل عبر FATOOM</small></div></div><div class="chat-tools"><button class="tool-btn" onclick="startCall('audio')" title="مكالمة صوتية">☎</button><button class="tool-btn" onclick="startCall('video')" title="مكالمة فيديو">▣</button><button class="icon-btn" onclick="refreshMessages()" title="تحديث">↻</button></div></header><div id="messages" class="messages"></div><form class="composer" id="messageForm"><div class="composer-actions"><button type="button" class="tool-btn" onclick="$('imageInput').click()" title="إرسال صورة">▧</button><button type="button" class="tool-btn" id="recordBtn" onclick="toggleRecording()" title="رسالة صوتية">🎙</button></div><input id="messageInput" type="text" placeholder="اكتب رسالتك هنا..." autocomplete="off" maxlength="10000"><button class="send" type="submit">➤</button><input id="imageInput" type="file" accept="image/*" class="hidden" onchange="sendAttachment(this.files[0],'image')"></form></div></main>
+ <nav class="app-bottom-nav" aria-label="التنقل الرئيسي">
+ <button class="nav-item active" id="navHome" onclick="openSocial()" aria-label="الرئيسية"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>الرئيسية</span></button>
+ <button class="nav-item" id="navMessages" onclick="goMessages()" aria-label="الرسائل"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8z"/></svg><span>الرسائل</span></button>
+ <button class="nav-item nav-create" onclick="$('postImage').click();openSocial()" aria-label="إنشاء"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>نشر</span></button>
+ <button class="nav-item" id="navStories" onclick="openSocial();$('storyImage').click()" aria-label="القصص"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span>القصص</span></button>
+ <button class="nav-item" id="navProfile" onclick="openMyProfile()" aria-label="حسابي"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>حسابي</span></button>
+</nav>
 </div>
 <div id="newChatModal" class="modal hidden"><div class="modal-card"><div class="modal-top"><h3>محادثة جديدة</h3><button class="close" onclick="closeNewChat()">×</button></div><p class="hint" style="text-align:right">اكتب اسم المستخدم للشخص الذي تريد مراسلته.</p><form id="newChatForm"><div class="field"><label>اسم المستخدم</label><input id="targetUsername" placeholder="مثال: ahmed123" required></div><button class="primary" id="newChatSubmit">ابدأ المحادثة</button></form><div id="newChatStatus"></div></div></div>
 
 <div id="socialModal" class="social-modal hidden"><div class="social-wrap"><div class="social-top"><div class="brand"><div class="brand-mark">F✦</div><div><div class="brand-name">FATOOM</div><div class="brand-sub">COMMUNITY</div></div></div><div class="social-nav"><button onclick="closeSocial()">الرسائل</button><button onclick="loadSocialFeed()">تحديث</button></div></div><div id="storiesBar" class="stories"></div><div class="social-form"><strong style="color:var(--gold2)">شارك لحظتك</strong><textarea id="postCaption" maxlength="2200" placeholder="ماذا يدور في بالك؟"></textarea><input id="postImage" type="file" accept="image/*"><button onclick="publishPost()">نشر المنشور</button><button class="gold-outline" style="margin-right:8px" onclick="$('storyImage').click()">＋ أضف قصة</button><input id="storyImage" type="file" accept="image/*" class="hidden" onchange="publishStory(this.files[0])"></div><div id="socialFeed"><div class="empty">جارٍ تحميل المنشورات...</div></div></div></div>
+<div id="profileModal" class="profile-modal hidden"><div class="profile-wrap"><div class="profile-top"><button class="profile-back" onclick="closeMyProfile()">‹</button><strong>الملف الشخصي</strong><button class="profile-back" onclick="signOut()" title="تسجيل الخروج">↪</button></div><div class="profile-hero"><div class="profile-avatar" id="profileAvatar">F</div><div class="profile-identity"><h2 id="profileName">حسابي</h2><p id="profileHandle">@username</p></div></div><div class="profile-stats"><div><strong id="profilePosts">0</strong><span>منشور</span></div><div><strong id="profileFollowers">0</strong><span>متابعون</span></div><div><strong id="profileFollowing">0</strong><span>يتابع</span></div></div><div class="profile-bio">مرحباً بك في مساحتك على FATOOM ✨</div><div class="profile-section-title">منشوراتي</div><div id="myPostsGrid" class="my-posts-grid"><div class="empty">لا توجد منشورات بعد</div></div></div></div>
 <div id="callOverlay" class="call-overlay hidden"><div class="call-videos"><video id="remoteVideo" class="call-remote" autoplay playsinline></video><video id="localVideo" class="call-local" autoplay playsinline muted></video></div><div class="call-info"><div class="avatar" id="callAvatar" style="margin:auto;width:72px;height:72px;font-size:25px">N</div><h2 id="callName">مكالمة FATOOM</h2><p id="callStatus" class="feed-small">جارٍ الاتصال...</p></div><div class="call-controls"><button onclick="toggleMute()" id="muteCallBtn">🎙</button><button onclick="toggleCamera()" id="cameraCallBtn">▣</button><button class="end-call" onclick="endCall()">✕</button></div></div>
 <div id="incomingCall" class="incoming-box hidden"><div class="incoming-card"><div class="avatar" id="incomingAvatar" style="margin:auto;width:70px;height:70px;font-size:25px">N</div><h3 id="incomingName">مكالمة واردة</h3><p id="incomingType" class="feed-small">يتصل بك...</p><button class="answer-btn" onclick="answerCall()">رد</button><button class="decline-btn" onclick="declineCall()">رفض</button></div></div>
 <script>
@@ -217,5 +250,24 @@ async function publishStory(file){if(!file)return;try{if(!file.type.startsWith('
 async function toggleLike(postId,liked){const q=sb.from('post_likes');const r=liked?await q.delete().eq('post_id',postId).eq('user_id',currentUser.id):await q.insert({post_id:postId,user_id:currentUser.id});if(r.error)alert(r.error.message);else await loadSocialFeed()}
 async function commentOnPost(postId){const content=prompt('اكتب تعليقك');if(!content?.trim())return;const {error}=await sb.from('post_comments').insert({post_id:postId,user_id:currentUser.id,content:content.trim()});if(error)alert(error.message);else await loadSocialFeed()}
 function viewStory(url){if(!url)return;const w=window.open('','_blank');if(w)w.document.write('<body style="margin:0;background:#000;display:grid;place-items:center;height:100vh"><img src="'+url+'" style="max-width:100%;max-height:100%"></body>')}
+
+
+function setNavActive(id){document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));if($(id))$(id).classList.add('active')}
+function goMessages(){closeSocial();closeMyProfile();setNavActive('navMessages');$('app').classList.add('chat-open');if(activeConversation) $('activeChat').classList.remove('hidden')}
+async function openMyProfile(){
+ closeSocial();$('profileModal').classList.remove('hidden');setNavActive('navProfile');
+ $('profileName').textContent=myProfile?.display_name||'حسابي';$('profileHandle').textContent='@'+(myProfile?.username||'');
+ $('profileAvatar').textContent=(myProfile?.display_name||'F').slice(0,1).toUpperCase();
+ const [posts,followers,following]=await Promise.all([
+  sb.from('posts').select('id,media_path,caption,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
+  sb.from('follows').select('follower_id',{count:'exact',head:true}).eq('following_id',currentUser.id),
+  sb.from('follows').select('following_id',{count:'exact',head:true}).eq('follower_id',currentUser.id)
+ ]);
+ $('profilePosts').textContent=posts.count??(posts.data?.length||0);
+ $('profileFollowers').textContent=followers.count??0;$('profileFollowing').textContent=following.count??0;
+ const items=posts.data||[];
+ $('myPostsGrid').innerHTML=items.length?(await Promise.all(items.map(async p=>{const u=await mediaUrl('nova-social',p.media_path);return u?'<img src="'+u+'" alt="منشور" loading="lazy">':'<div class="post-tile-empty">'+escapeHtml(p.caption||'منشور')+'</div>'}))).join(''):'<div class="post-tile-empty">لم تنشر أي صورة بعد</div>';
+}
+function closeMyProfile(){$('profileModal').classList.add('hidden')}
 
 </script></body></html>
