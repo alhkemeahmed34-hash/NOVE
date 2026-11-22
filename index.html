@@ -52,7 +52,7 @@ $('authForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$
  if(mode==='signup'){
   const username=$('username').value.trim().toLowerCase().replace(/^@/,'');
   if(!/^[a-z0-9_]{3,24}$/.test(username))throw new Error('اسم المستخدم: استخدم 3 إلى 24 حرفاً إنجليزياً أو رقماً أو _');
-  const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:$('displayName').value.trim()||username,username}}});
+  const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:$('displayName').value.trim()||username,username},emailRedirectTo:window.location.href.split('?')[0]}});
   if(error)throw error;
   if(data.session){await boot(data.session.user)}else status('authStatus','تم إنشاء الحساب. افتح بريدك الإلكتروني وأكّد الحساب، ثم سجّل الدخول.');
  }else{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await boot(data.user)}
