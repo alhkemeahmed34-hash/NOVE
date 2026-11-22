@@ -407,6 +407,7 @@ async function openMyProfile(){
  closeSocial();$('profileModal').classList.remove('hidden');setNavActive('navProfile');
  $('profileName').textContent=myProfile?.display_name||'حسابي';$('profileHandle').textContent='@'+(myProfile?.username||'');$('profileBio').textContent=myProfile?.bio||'مرحباً بك في مساحتك على FATOOM ✨';
  $('profileAvatar').textContent=(myProfile?.display_name||'F').slice(0,1).toUpperCase();
+ if(myProfile?.avatar_url){const avatarUrl=await mediaUrl('nova-social',myProfile.avatar_url);if(avatarUrl)$('profileAvatar').innerHTML='<img src="'+avatarUrl+'" alt="صورة الحساب">';}
  const [posts,followers,following]=await Promise.all([
   sb.from('posts').select('id,media_path,caption,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}),
   sb.from('follows').select('follower_id',{count:'exact',head:true}).eq('following_id',currentUser.id),
