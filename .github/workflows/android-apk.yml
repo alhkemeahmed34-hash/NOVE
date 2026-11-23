@@ -53,6 +53,7 @@ jobs:
           cp index.html www/index.html
           cp manifest.webmanifest www/manifest.webmanifest
           cp icon.svg www/icon.svg
+          if [ -d assets ]; then cp -r assets www/assets; fi
       - name: Generate Android project
         run: npx cap add android
       - name: Add camera and microphone permissions
