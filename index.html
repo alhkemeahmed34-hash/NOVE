@@ -196,6 +196,19 @@ body{background:#f5f5fa;color:#242333}
 .feed-actions{align-items:center;flex-wrap:wrap}.feed-actions button{font-size:13px;padding:7px 9px;border-radius:10px}.feed-actions .saved{color:#e0a13b}.social-nav{flex-wrap:wrap;justify-content:flex-end}.social-nav button{font-size:11px;padding:8px 10px}
 #fatoomToast{position:fixed;z-index:90;bottom:90px;left:50%;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:#28233d;color:#fff;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px #17132b33;font-size:12px;transition:.22s}#fatoomToast.show{opacity:1;transform:translate(-50%,0)}
 body.dark-mode{background:#11101a;color:#f3efff}body.dark-mode .social-modal,body.dark-mode .profile-modal{background:#11101a;color:#f3efff}body.dark-mode .social-top,body.dark-mode .profile-top{background:#171523ed;border-color:#302b40}body.dark-mode .brand-name,body.dark-mode .profile-identity h2,body.dark-mode .profile-stats strong{color:#eee8ff}body.dark-mode .feed-card,body.dark-mode .social-form,body.dark-mode .discover-panel{background:#1b1928;border-color:#302b40;color:#f3efff}body.dark-mode .feed-caption,body.dark-mode .profile-bio{color:#d0c9df}body.dark-mode .feed-small,body.dark-mode .profile-stats span{color:#a9a1bc}body.dark-mode .person-result{background:#211e30;border-color:#373149}body.dark-mode .discover-search,body.dark-mode .discover-search input,body.dark-mode .social-form textarea{background:#13111e;color:#f3efff;border-color:#39334d}body.dark-mode .app-bottom-nav{background:#171523ed;border-color:#302b40}body.dark-mode .nav-item{color:#aaa1c1}body.dark-mode .nav-item.active{color:#c0a6ff}body.dark-mode .profile-stats{border-color:#302b40}body.dark-mode .profile-edit{background:#2b2441;color:#d7c7ff;border-color:#44365f}body.dark-mode .social-nav button{background:#29243a;color:#d9cbff;border-color:#3a3152}
+
+/* Extend night theme to chat and messaging screens */
+body.dark-mode .sidebar,body.dark-mode .chat-panel{background:#1b1928;border-color:#302b40}
+body.dark-mode .side-top,body.dark-mode .chat-head,body.dark-mode .composer{background:#1b1928;border-color:#302b40}
+body.dark-mode .search input,body.dark-mode .composer input{background:#11101a;color:#f3efff;border-color:#39334d}
+body.dark-mode .messages{background:#141220}
+body.dark-mode .bubble{background:#28243a;color:#f3efff;border-color:#39334d}
+body.dark-mode .bubble.mine{background:linear-gradient(135deg,#5e47a7,#7658c6);color:#fff;border:0}
+body.dark-mode .chat-empty h2{color:#d7c7ff}body.dark-mode .chat-empty p{color:#aaa1c1}
+body.dark-mode .icon-btn,body.dark-mode .tool-btn{background:#29243a;color:#d9cbff;border-color:#3a3152}
+body.dark-mode .conversation:hover,body.dark-mode .conversation.active{background:#29243a}
+body.dark-mode .conversation strong,body.dark-mode .chat-head strong{color:#eee8ff}
+body.dark-mode .conversation p,body.dark-mode .section-label{color:#aaa1c1}
 </style></head>
 <body>
 <div id="auth" class="auth-wrap"><div class="auth-card">
@@ -236,7 +249,7 @@ const SUPABASE_KEY='sb_publishable__qyFGdoVg8ji6fshGYiPtQ_PQjzPRzE';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let feedMode="latest",storyTimer=null;
 function getSavedPosts(){try{return JSON.parse(localStorage.getItem("fatoom_saved_posts")||"[]")}catch(e){return []}}
-function showSavedPosts(){feedMode="saved";openSocial();loadSocialFeed()}
+function showSavedPosts(){openSocial("saved")}
 function toggleSavedPost(id){const a=getSavedPosts(),b=a.includes(id)?a.filter(x=>x!==id):a.concat(id);localStorage.setItem("fatoom_saved_posts",JSON.stringify(b));if(feedMode==="saved"&&!b.includes(id))loadSocialFeed();else{const el=document.querySelector('[data-save-post="'+id+'"]');if(el){el.textContent=b.includes(id)?"🔖 محفوظ":"♧ حفظ";el.classList.toggle("saved",b.includes(id))}}}
 async function sharePost(id){const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(id);try{if(navigator.share)await navigator.share({title:"منشور على FATOOM",text:"شاهد هذا المنشور على FATOOM",url});else{await navigator.clipboard.writeText(url);toast("تم نسخ رابط المنشور")}}catch(e){if(e.name!=="AbortError")toast("تعذر مشاركة الرابط")}}
 function toast(message){let el=$("fatoomToast");if(!el){el=document.createElement("div");el.id="fatoomToast";document.body.appendChild(el)}el.textContent=message;el.classList.add("show");clearTimeout(el.timer);el.timer=setTimeout(()=>el.classList.remove("show"),2200)}
@@ -324,7 +337,7 @@ function cleanupCall(){
 }
 function toggleMute(){if(!localStream)return;const t=localStream.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$('muteCallBtn').textContent=t.enabled?'🎙':'🔇'}}
 function toggleCamera(){if(!localStream)return;const t=localStream.getVideoTracks()[0];if(t){t.enabled=!t.enabled;$('cameraCallBtn').textContent=t.enabled?'▣':'🚫'}}
-async function openSocial(){$('socialModal').classList.remove('hidden');$('app').classList.add('social-open');$('discoverPanel').classList.add('hidden');$('socialComposer').classList.add('hidden');setNavActive('navHome');await loadSocialFeed()}
+async function openSocial(mode="latest"){feedMode=mode;$ ('socialModal').classList.remove('hidden');$('app').classList.add('social-open');$('discoverPanel').classList.add('hidden');$('socialComposer').classList.add('hidden');setNavActive('navHome');await loadSocialFeed()}
 function closeSocial(){$('socialModal').classList.add('hidden');$('app').classList.remove('social-open')}
 async function mediaUrl(bucket,path){if(!path)return null;const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,3600);return error?null:data?.signedUrl}
 async function loadSocialFeed(){if(!currentUser)return;$('socialFeed').innerHTML='<div class="empty">جارٍ تحميل المنشورات...</div>';const [stories,posts]=await Promise.all([sb.from('stories').select('*').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}),sb.from('posts').select('*').order('created_at',{ascending:false}).limit(40)]);if(stories.error||posts.error){$('socialFeed').innerHTML='<div class="empty">تعذر تحميل المجتمع: '+escapeHtml((stories.error||posts.error).message)+'</div>';return}
